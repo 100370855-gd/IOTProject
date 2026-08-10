@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-import static java.time.Instant.now;
-
 @Service
 public class TelemetryService {
 

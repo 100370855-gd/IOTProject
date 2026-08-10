@@ -79,34 +79,77 @@ public class TelemetryService {
     /**
      * Detects if device temperature is overheating.
      * @param telemetry the telemetry data to check
+     * @return true if temperature &gt; MAX_TEMPERATURE, false otherwise
      */
-    private void isOverHeated(Telemetry telemetry) {
+    private boolean isOverHeated(Telemetry telemetry) {
         if (telemetry.temperature() > MAX_TEMPERATURE) {
             System.out.println("Overheating detected in device " + telemetry.deviceId()
                     + " at " + telemetry.timestamp());
+            return true;
         }
+        return false;
     }
 
     /**
      * Detects if device battery level is low.
      * @param telemetry the telemetry data to check
+     * @return true if battery &lt; MIN_BATTERY, false otherwise
      */
-    private void isLowBattery(Telemetry telemetry) {
+    private boolean isLowBattery(Telemetry telemetry) {
         if (telemetry.battery() < MIN_BATTERY) {
             System.out.println("Battery is low in device " + telemetry.deviceId()
                     + " at " + telemetry.timestamp());
+            return true;
         }
+        return false;
     }
 
     /**
      * Detects if device is offline (no data received within MAX_AGE_SECONDS).
      * @param telemetry the telemetry data to check
+     * @return true if telemetry is older than MAX_AGE_SECONDS, false otherwise
      */
-    private void isOffline(Telemetry telemetry) {
+    private boolean isOffline(Telemetry telemetry) {
         long age = Duration.between(telemetry.timestamp(), Instant.now()).toSeconds();
         if (age > MAX_AGE_SECONDS) {
             System.out.println(telemetry.deviceId() + " hasn't responded for " + MAX_AGE_SECONDS + " seconds. Device is Offline");
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Computes a 0–100 health score from a telemetry sample.
+     * Penalizes low battery, overheating, and offline status.
+     *
+     * @param deviceId deviceId sample
+     * @return health score (0-100)
+     */
+    private int calculateDeviceHealthScore(String deviceId) {
+        int score = 100;
+        Telemetry telemetry = getCachedTelemetry(deviceId).getLast();
+
+        if (isLowBattery(telemetry)) {
+            score -= 30;
+        }
+        if (isOverHeated(telemetry)) {
+            score -= 30;
+        }
+        if (isOffline(telemetry)) {
+            score -= 40;
+        }
+        return Math.max(score, 0);
+    }
+
+    /**
+     * Retrieves the computed health score for a device.
+     * Delegates to calculateDeviceHealthScore using the most recent cached telemetry.
+     *
+     * @param deviceId the device ID
+     * @return health score (0-100)
+     */
+    public int getDeviceHealthScore(String deviceId) {
+        return calculateDeviceHealthScore(deviceId);
     }
 
     /**
@@ -119,15 +162,15 @@ public class TelemetryService {
         return queue != null ? new ArrayList<>(queue) : Collections.emptyList();
     }
 
-    /**
-     * Retrieves all cached telemetry for all devices.
-     * @return map of device IDs to lists of cached telemetry
-     */
-    public Map<String, List<Telemetry>> getAllCachedTelemetry() {
-        Map<String, List<Telemetry>> result = new ConcurrentHashMap<>();
-        telemetryCache.forEach((deviceId, queue) ->
-                result.put(deviceId, new ArrayList<>(queue))
-        );
-        return result;
-    }
+//    /**
+//     * Retrieves all cached telemetry for all devices.
+//     * @return map of device IDs to lists of cached telemetry
+//     */
+//    public Map<String, List<Telemetry>> getAllCachedTelemetry() {
+//        Map<String, List<Telemetry>> result = new ConcurrentHashMap<>();
+//        telemetryCache.forEach((deviceId, queue) ->
+//                result.put(deviceId, new ArrayList<>(queue))
+//        );
+//        return result;
+//    }
 }

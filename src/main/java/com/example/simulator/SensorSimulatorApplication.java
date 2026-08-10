@@ -104,7 +104,7 @@ public class SensorSimulatorApplication {
                 System.out.println("Published: " + json);
             }
 
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         }
     }
 }

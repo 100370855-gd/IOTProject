@@ -59,7 +59,7 @@ public class MqttSubscriber {
 
                         System.out.println("Received: " + telemetry);
 
-                        service.save(telemetry);
+                        service.process(telemetry);
 
                     } catch (Exception e) {
                         e.printStackTrace();

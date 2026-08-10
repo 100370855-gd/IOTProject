@@ -34,8 +34,18 @@ public class TelemetryService {
      * Saves telemetry data to the repository and cache, then detects anomalies.
      * @param telemetry the telemetry data to save
      */
-    public void save(Telemetry telemetry) {
+    public void process(Telemetry telemetry) {
 
+        saveToDatabase(telemetry);
+        addToCache(telemetry);
+        detectSingularAnomalies(telemetry);
+    }
+
+    /**
+     * Saves telemetry data to the repository.
+     * @param telemetry the telemetry data to save
+     */
+    private void saveToDatabase(Telemetry telemetry) {
         TelemetryEntity entity = new TelemetryEntity();
 
         entity.setDeviceId(telemetry.deviceId());
@@ -46,9 +56,6 @@ public class TelemetryService {
 
         repository.save(entity);
         System.out.println("Saved telemetry for " + telemetry.deviceId());
-        
-        addToCache(telemetry);
-        detectSingularAnomalies(telemetry);
     }
 
     /**

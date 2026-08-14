@@ -24,10 +24,12 @@ public class TelemetryService {
     private static final int CACHE_SIZE = 10;
 
     private final TelemetryRepository repository;
+    private final AIAnomalyService aiAnomalyService;
     private final Map<String, Queue<Telemetry>> telemetryCache = new ConcurrentHashMap<>();
 
-    public TelemetryService(TelemetryRepository repository) {
+    public TelemetryService(TelemetryRepository repository, AIAnomalyService aiAnomalyService) {
         this.repository = repository;
+        this.aiAnomalyService = aiAnomalyService;
     }
 
     /**

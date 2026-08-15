@@ -20,7 +20,7 @@ import java.util.Properties;
 public class SensorSimulatorApplication {
 
     static Properties properties = new Properties();
-    
+
     static {
         try (InputStream input =
                 SensorSimulatorApplication.class
@@ -48,20 +48,19 @@ public class SensorSimulatorApplication {
      */
     public static void main(String[] args) throws Exception {
 
-        System.out.println(properties.getProperty("mqtt.host"));
         Mqtt5AsyncClient client =
                 MqttClient.builder()
                         .useMqttVersion5()
                         .sslWithDefaultConfig()
-                        .serverHost(properties.getProperty("mqtt.host"))
-                        .serverPort(Integer.parseInt(properties.getProperty("mqtt.port")))
+                        .serverHost(getProperty("mqtt.host", "MQTT_HOST"))
+                        .serverPort(Integer.parseInt(getProperty("mqtt.port", "MQTT_PORT")))
                         .buildAsync();
 
 
         client.connectWith()
                 .simpleAuth()
-                .username(properties.getProperty("mqtt.username"))
-                .password(properties.getProperty("mqtt.password").getBytes(StandardCharsets.UTF_8))
+                .username(getProperty("mqtt.username", "MQTT_USERNAME"))
+                .password(getProperty("mqtt.password", "MQTT_PASSWORD").getBytes(StandardCharsets.UTF_8))
                 .applySimpleAuth()
                 .send()
                 // add a listener
@@ -97,14 +96,30 @@ public class SensorSimulatorApplication {
                 String json = mapper.writeValueAsString(telemetry);
 
                 client.publishWith()
-                        .topic(properties.getProperty("mqtt.topic") + telemetry.deviceId())
+                        .topic(getProperty("mqtt.topic", "") + telemetry.deviceId())
                         .payload(json.getBytes(StandardCharsets.UTF_8))
                         .send();
 
                 System.out.println("Published: " + json);
             }
 
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         }
+    }
+
+    /**
+     * Retrieves a property value with environment variable fallback.
+     * Checks for the environment variable first; if not set or blank, falls back to the property file.
+     * @param name the property name in the application.properties file
+     * @param envName the environment variable name to check
+     * @return the environment variable value if set and non-blank, otherwise the property file value
+     */
+    private static String getProperty(String name, String envName) {
+        String envValue = System.getenv(envName);
+
+        if (envValue != null && !envValue.isBlank()) {
+            return envValue;
+        }
+        return properties.getProperty(name);
     }
 }

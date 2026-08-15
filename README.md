@@ -1,3 +1,7 @@
+## IoT Device Intelligence Platform
+_This is a test/learning project designed to demonstrate real-time IoT telemetry processing, cloud-based MQTT messaging, data persistence, and AI-powered analysis_.
+
+
 A Spring Boot application that consumes IoT telemetry messages over MQTT, persists them to a database, maintains a recent in-memory telemetry cache, detects threshold-based anomalies, and provides device health information through a REST API.
 The project also includes an AI analysis layer that can use Claude to summarize recent telemetry data.
 
